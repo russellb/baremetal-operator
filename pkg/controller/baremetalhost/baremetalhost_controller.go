@@ -172,6 +172,10 @@ func (r *ReconcileBareMetalHost) Reconcile(request reconcile.Request) (result re
 		// Error reading the object - requeue the request.
 		return reconcile.Result{}, errors.Wrap(err, "could not load host data")
 	}
+	reqLogger.Info("debug-1",
+		"host name=", host.ObjectMeta.Name,
+		"prov state=", host.Status.Provisioning.State,
+		"ext prov=", host.Spec.ExternallyProvisioned)
 
 	// NOTE(dhellmann): Handle a few steps outside of the phase
 	// structure because they require extra data lookup (like the
@@ -259,6 +263,11 @@ func (r *ReconcileBareMetalHost) Reconcile(request reconcile.Request) (result re
 		}
 	}
 
+	reqLogger.Info("debug-2",
+		"host name=", host.ObjectMeta.Name,
+		"prov state=", host.Status.Provisioning.State,
+		"ext prov=", host.Spec.ExternallyProvisioned)
+
 	// Pick the action to perform
 	var actionName metal3v1alpha1.ProvisioningState
 	switch {
@@ -293,6 +302,10 @@ func (r *ReconcileBareMetalHost) Reconcile(request reconcile.Request) (result re
 		return reconcile.Result{Requeue: true}, nil
 	}
 
+	reqLogger.Info("debug-3",
+		"host name=", host.ObjectMeta.Name,
+		"prov state=", host.Status.Provisioning.State,
+		"ext prov=", host.Spec.ExternallyProvisioned)
 	info := &reconcileInfo{
 		log:            reqLogger.WithValues("provisioningState", actionName),
 		host:           host,
@@ -303,6 +316,12 @@ func (r *ReconcileBareMetalHost) Reconcile(request reconcile.Request) (result re
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to create provisioner")
 	}
+
+	reqLogger.Info("debug-4",
+		"host name=", host.ObjectMeta.Name,
+		"prov state=", host.Status.Provisioning.State,
+		"ext prov=", host.Spec.ExternallyProvisioned,
+		"action", actionName)
 
 	switch actionName {
 	case metal3v1alpha1.StateRegistering:
@@ -325,6 +344,11 @@ func (r *ReconcileBareMetalHost) Reconcile(request reconcile.Request) (result re
 		// Probably a provisioning error state?
 		return reconcile.Result{}, fmt.Errorf("Unrecognized action %q", actionName)
 	}
+
+	reqLogger.Info("debug-5",
+		"host name=", host.ObjectMeta.Name,
+		"prov state=", host.Status.Provisioning.State,
+		"ext prov=", host.Spec.ExternallyProvisioned)
 
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, fmt.Sprintf("action %q failed", actionName))
